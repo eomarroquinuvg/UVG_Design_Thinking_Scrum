@@ -18,13 +18,14 @@ const closed = Date.now() >= new Date('2026-11-11T00:00:00-06:00').getTime();
 const configured = Boolean(config.WORKER_URL && config.TURNSTILE_SITE_KEY && !config.TURNSTILE_SITE_KEY.startsWith('REEMPLAZAR_'));
 let sending = false;
 let turnstileWidgetId = null;
+let turnstileVerified = false;
 
 function message(text, type = '') {
   msg.textContent = text;
   msg.className = `formmsg ${type}`.trim();
 }
 function updateAvailability() {
-  submit.disabled = sending || closed || !configured || turnstileWidgetId === null;
+  submit.disabled = sending || closed || !configured || !form.checkValidity() || !turnstileVerified;
 }
 if (!configured) {
   warning.hidden = false;
@@ -36,6 +37,8 @@ if (closed) {
   warning.textContent = 'El plazo de inscripción finalizó el 10 de noviembre de 2026.';
   message('Inscripciones cerradas.');
 }
+form.addEventListener('input', updateAvailability);
+form.addEventListener('change', updateAvailability);
 updateAvailability();
 
 // La API de Turnstile se carga con ?render=explicit en index.html.
@@ -43,16 +46,28 @@ window.onloadTurnstile = function () {
   if (!configured || closed || !window.turnstile) return;
   turnstileWidgetId = window.turnstile.render('#turnstileContainer', {
     sitekey: config.TURNSTILE_SITE_KEY,
-    callback: () => message('Verificación completada. Ya puedes enviar tu inscripción.'),
-    'expired-callback': () => message('La verificación expiró. Vuelve a verificarte.', 'error'),
-    'error-callback': () => message('No se pudo completar la verificación. Inténtalo de nuevo.', 'error')
+    callback: () => {
+      turnstileVerified = true;
+      message('Verificación completada. Completa todos los campos y acepta las bases para enviar.');
+      updateAvailability();
+    },
+    'expired-callback': () => {
+      turnstileVerified = false;
+      message('La verificación expiró. Vuelve a verificarte.', 'error');
+      updateAvailability();
+    },
+    'error-callback': () => {
+      turnstileVerified = false;
+      message('No se pudo completar la verificación. Inténtalo de nuevo.', 'error');
+      updateAvailability();
+    }
   });
   updateAvailability();
 };
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (sending || closed || !configured || turnstileWidgetId === null) return;
+  if (sending || closed || !configured || !form.checkValidity() || !turnstileVerified || turnstileWidgetId === null) return;
   const token = window.turnstile?.getResponse(turnstileWidgetId);
   if (!token) {
     message('Completa la verificación de seguridad antes de enviar.', 'error');
@@ -90,6 +105,7 @@ form.addEventListener('submit', async (event) => {
     message(`No fue posible registrar la solicitud: ${error.message}. Consulta con el organizador antes de reintentar para evitar duplicados.`, 'error');
   } finally {
     window.turnstile?.reset(turnstileWidgetId);
+    turnstileVerified = false;
     sending = false;
     submit.textContent = 'Enviar solicitud de inscripción →';
     updateAvailability();

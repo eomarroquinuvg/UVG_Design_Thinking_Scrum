@@ -41,3 +41,6 @@ footer a:hover{text-decoration:underline;text-underline-offset:4px}
 @media(max-width:950px){.bases{align-items:flex-start}.bases-actions{min-width:220px}}
 @media(max-width:700px){.hero-copy{padding-top:58px;padding-bottom:50px}.hero-points{gap:7px}.hero-points span{font-size:11px}.timeline article{padding:17px;gap:14px}.timeline article>b{width:40px;height:40px}.bases-actions{width:100%;min-width:0}.bases-actions .btn{width:100%}.top nav{max-height:calc(100vh - 76px);overflow-y:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* Estado del boton mientras el formulario no esta listo */
+#submitBtn:disabled{background:#b8bfc0;border-color:#b8bfc0;color:#fff;opacity:1;cursor:not-allowed;box-shadow:none;transform:none}
