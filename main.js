@@ -14,7 +14,7 @@ const msg = document.querySelector('#formMessage');
 const submit = document.querySelector('#submitBtn');
 const warning = document.querySelector('#setupWarning');
 const config = window.UVG_CONFIG || {};
-const closed = Date.now() >= new Date('2026-11-11T00:00:00-06:00').getTime();
+const closed = Date.now() >= new Date('2026-11-13T00:00:00-06:00').getTime();
 const configured = Boolean(config.WORKER_URL && config.TURNSTILE_SITE_KEY && !config.TURNSTILE_SITE_KEY.startsWith('REEMPLAZAR_'));
 let sending = false;
 let turnstileWidgetId = null;
@@ -34,7 +34,7 @@ if (!configured) {
 }
 if (closed) {
   warning.hidden = false;
-  warning.textContent = 'El plazo de inscripción finalizó el 10 de noviembre de 2026.';
+  warning.textContent = 'El plazo de inscripción finalizó el 12 de noviembre de 2026.';
   message('Inscripciones cerradas.');
 }
 form.addEventListener('input', updateAvailability);
